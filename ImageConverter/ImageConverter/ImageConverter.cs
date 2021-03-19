@@ -65,7 +65,7 @@ namespace ImageConverter
         internal void Convert()
         {
             IImageReader reader;
-            Console.WriteLine(sourceFileFormat);
+            Console.WriteLine(sourcePath);
             switch (sourceFileFormat)
             {
                 case PNG_FILE_FORMAT:
@@ -76,7 +76,7 @@ namespace ImageConverter
 
             }
 
-            reader.Read(sourceFileFormat);
+            reader.Read(sourcePath);
         }
 
 
