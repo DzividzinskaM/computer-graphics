@@ -80,7 +80,7 @@ namespace ImageConverter
                         ParseIHDR(chunk);
                         break;
                     case IDAT:
-                        addIDAT(chunk);
+                        AddIDAT(chunk);
                         break;
                     case PLTE:
                         ParsePLTE(chunk);
@@ -112,12 +112,12 @@ namespace ImageConverter
             UseFilters(decodedSequence);
 
             if (ColourType == 6)
-                useAlphaChannel();
+                UseAlphaChannel();
 
 
         }
 
-        private void useAlphaChannel()
+        private void UseAlphaChannel()
         {
             for (int i = 0, j = 0; i < RGBArray.Length; i += 3, j++)
             {
@@ -165,8 +165,8 @@ namespace ImageConverter
         private void UsePaethFilter(byte[] decodedSequence, int currPos, ref int point)
         {
             byte[] previousLeftCurrent = new byte[3];
-            byte[] previousPixelsLine = getSubSequence(RGBArray, point - lineSize);
-            byte[] currentPixelsLine = getSubSequence(decodedSequence, currPos + 1);
+            byte[] previousPixelsLine = GetSubSequence(RGBArray, point - lineSize);
+            byte[] currentPixelsLine = GetSubSequence(decodedSequence, currPos + 1);
 
             byte[] filteredArr = new byte[lineSize];
 
@@ -197,8 +197,8 @@ namespace ImageConverter
         private void UseAverageFilter(byte[] decodedSequence, int currPos, ref int point)
         {
             byte[] leftPrevious = new byte[3];
-            byte[] previousPixelsLine = getSubSequence(RGBArray, point - lineSize);
-            byte[] currentPixelsLine = getSubSequence(decodedSequence, currPos + 1);
+            byte[] previousPixelsLine = GetSubSequence(RGBArray, point - lineSize);
+            byte[] currentPixelsLine = GetSubSequence(decodedSequence, currPos + 1);
 
             byte[] filteredArr = new byte[lineSize];
 
@@ -221,8 +221,8 @@ namespace ImageConverter
 
         private void UseUpFilter(byte[] decodedSequence, int currPos, ref int point)
         {
-            byte[] previousPixelsLine = getSubSequence(RGBArray, point - lineSize);
-            byte[] currentPixelsLine = getSubSequence(decodedSequence, currPos + 1);
+            byte[] previousPixelsLine = GetSubSequence(RGBArray, point - lineSize);
+            byte[] currentPixelsLine = GetSubSequence(decodedSequence, currPos + 1);
             byte[] filteredArr = new byte[lineSize];
 
             for (int i = 0; i < lineSize; i++)
@@ -239,7 +239,7 @@ namespace ImageConverter
         private void UseSubFilter(byte[] decodedSequence, int currPos, ref int point)
         {
             byte[] previous = new byte[3];
-            byte[] currentPixelsArray = getSubSequence(decodedSequence, currPos + 1);
+            byte[] currentPixelsArray = GetSubSequence(decodedSequence, currPos + 1);
             byte[] filteredArr = new byte[lineSize];
             int pointer = 0;
 
@@ -268,11 +268,11 @@ namespace ImageConverter
 
         private void UseNoneFilter(byte[] decodedSequence, int currPos, ref int point)
         {
-            getSubSequence(decodedSequence, currPos + 1).CopyTo(RGBArray, point);
+            GetSubSequence(decodedSequence, currPos + 1).CopyTo(RGBArray, point);
             point += lineSize;
         }
 
-        private byte[] getSubSequence(byte[] decodedSequence, int skip)
+        private byte[] GetSubSequence(byte[] decodedSequence, int skip)
         {
             return decodedSequence.Skip(skip).Take(lineSize).ToArray();
         }
@@ -376,7 +376,7 @@ namespace ImageConverter
         }
 
         
-        private void addIDAT(PngChunk chunk)
+        private void AddIDAT(PngChunk chunk)
         {
             int index = IDATdata.Length;
             IDATdata = new byte[IDATdata.Length + chunk.DataLength];
@@ -386,13 +386,13 @@ namespace ImageConverter
         
         private void ParseIHDR(PngChunk chunk)
         {
-            Width = getDataFromBytesArray(WIDTH_START_POSITION, FOUR_BYTES_BLOCK, chunk.Data);
-            Length = getDataFromBytesArray(LENGTH_START_POSITION, FOUR_BYTES_BLOCK, chunk.Data);
-            BitDepth = (byte)getDataFromBytesArray(BIT_DEPTH_START_POSITION, ONE_BYTE_BLOCK, chunk.Data);
-            ColourType = (byte)getDataFromBytesArray(COLOR_TYPE_START_POSITION, ONE_BYTE_BLOCK, chunk.Data);
-            CompressionType = (byte)getDataFromBytesArray(COMPRESSION_TYPE_START_POSITION, ONE_BYTE_BLOCK, chunk.Data);
-            FilterMethod = (byte)getDataFromBytesArray(FILTER_METHOD_START_POSITION, ONE_BYTE_BLOCK, chunk.Data);
-            Interlace = (byte)getDataFromBytesArray(INTERLACE_START_POSITION, ONE_BYTE_BLOCK, chunk.Data);
+            Width = GetDataFromBytesArray(WIDTH_START_POSITION, FOUR_BYTES_BLOCK, chunk.Data);
+            Length = GetDataFromBytesArray(LENGTH_START_POSITION, FOUR_BYTES_BLOCK, chunk.Data);
+            BitDepth = (byte)GetDataFromBytesArray(BIT_DEPTH_START_POSITION, ONE_BYTE_BLOCK, chunk.Data);
+            ColourType = (byte)GetDataFromBytesArray(COLOR_TYPE_START_POSITION, ONE_BYTE_BLOCK, chunk.Data);
+            CompressionType = (byte)GetDataFromBytesArray(COMPRESSION_TYPE_START_POSITION, ONE_BYTE_BLOCK, chunk.Data);
+            FilterMethod = (byte)GetDataFromBytesArray(FILTER_METHOD_START_POSITION, ONE_BYTE_BLOCK, chunk.Data);
+            Interlace = (byte)GetDataFromBytesArray(INTERLACE_START_POSITION, ONE_BYTE_BLOCK, chunk.Data);
 
             IDATdata = new byte[0];
             Plte = new Pixel[0];
@@ -409,7 +409,7 @@ namespace ImageConverter
         }
 
        
-        private int getDataFromBytesArray(int start, int count, byte[] bytes)
+        private int GetDataFromBytesArray(int start, int count, byte[] bytes)
         {
             string currHexValue = "";
             for (int i = start; i < start + count; i++)
