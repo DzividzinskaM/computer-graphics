@@ -6,6 +6,6 @@ namespace ImageConverter
 {
     interface IImageReader
     {
-        public void Read(string filePath);
+        public Image Read(string filePath);
     }
 }

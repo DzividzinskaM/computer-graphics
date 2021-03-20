@@ -52,11 +52,14 @@ namespace ImageConverter
 
 
 
-        public void Read(string filePath)
+        public Image Read(string filePath)
         {
             ReadBytesFromFile(filePath);
             IsFilePng();
             GetChunks();
+
+            Image image = new Image(Width, Length, RGBArray);
+            return image;
         }
 
         private void GetChunks()
@@ -89,7 +92,7 @@ namespace ImageConverter
                         ParseIDAT(chunk);
                         break;
                     default:
-                        break;
+                        throw new Exception("Program work only with image, which consists of critical chunks");
                 }
 
                 pos += chunk.TotalLength;
@@ -98,7 +101,7 @@ namespace ImageConverter
 
         private void ParseIDAT(PngChunk chunk)
         {
-            byte[] decodedSequence = Inflater.Inflate(IDATdata);
+            byte[] decodedSequence = Inflate(IDATdata);
             rgbNumber = Width * Length * 3;
             lineSize = Width * 3;
 
