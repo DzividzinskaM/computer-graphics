@@ -6,5 +6,6 @@ namespace ImageConverter
 {
     interface IImageWriter
     {
+        public void Write(string filePath, Image image);
     }
 }
