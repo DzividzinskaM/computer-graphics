@@ -344,7 +344,28 @@ namespace ImageConverter
             return output;
         }
 
-        
+        private byte[] Inflate(byte[] inputByte)
+        {
+            byte[] temp = new byte[1024];
+            MemoryStream memory = new MemoryStream();
+            ICSharpCode.SharpZipLib.Zip.Compression.Inflater inf = new ICSharpCode.SharpZipLib.Zip.Compression.Inflater();
+            inf.SetInput(inputByte);
+            while (!inf.IsFinished)
+            {
+                int extracted = inf.Inflate(temp);
+                if (extracted > 0)
+                {
+                    memory.Write(temp, 0, extracted);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return memory.ToArray();
+        }
+
+
         private void ParsePLTE(PngChunk chunk)
         {
             Plte = new Pixel[chunk.DataLength];
