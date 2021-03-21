@@ -65,6 +65,7 @@ namespace ImageConverter
         internal void Convert()
         {
             IImageReader reader;
+            IImageWriter writer;
             Console.WriteLine(sourcePath);
             switch (sourceFileFormat)
             {
@@ -72,11 +73,22 @@ namespace ImageConverter
                     reader = new PngReader();
                     break;
                 default:
-                    throw new Exception("Program working only with png");
-
+                    throw new Exception("Program reading only png files");
             }
 
-            reader.Read(sourcePath);
+            switch (goalFormat)
+            {
+                case PPM_FILE_FORMAT:
+                    writer = new PpmWriter();
+                    break;
+                default:
+                    throw new Exception("The goal format can be only ppm");
+            }
+
+
+            string goalPath = sourcePath.Replace("." + sourceFileFormat, "." + goalFormat);
+            Image img = reader.Read(sourcePath);
+            writer.Write(goalPath, img);
         }
 
 
