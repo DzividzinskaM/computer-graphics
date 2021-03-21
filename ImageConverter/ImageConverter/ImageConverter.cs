@@ -66,7 +66,7 @@ namespace ImageConverter
         {
             IImageReader reader;
             IImageWriter writer;
-            Console.WriteLine(sourcePath);
+           
             switch (sourceFileFormat)
             {
                 case PNG_FILE_FORMAT:

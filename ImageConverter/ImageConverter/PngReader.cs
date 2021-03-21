@@ -70,12 +70,6 @@ namespace ImageConverter
                 
                 PngChunk chunk = new PngChunk(inputBytes.Skip(pos).ToArray());
 
-                Console.WriteLine($"chunk data length {chunk.DataLength}");
-                Console.WriteLine($"chunk type {chunk.Type}");
-                Console.WriteLine($"chunk total length {chunk.TotalLength}");
-
-                Console.WriteLine();
-
 
                 switch (chunk.Type)
                 {
@@ -217,7 +211,7 @@ namespace ImageConverter
 
 
 
-            // int rgbaArrayPos = defArrayStartPointer(currPos);
+            
             filteredArr.CopyTo(RGBArray, point);
             point += lineSize;
         }
@@ -235,8 +229,6 @@ namespace ImageConverter
             filteredArr.CopyTo(RGBArray, point);
             point += lineSize;
 
-
-            Console.WriteLine();
         }
 
         private void UseSubFilter(byte[] decodedSequence, int currPos, ref int point)
@@ -264,7 +256,6 @@ namespace ImageConverter
             }
 
 
-            //int rgbaArrayPos = defArrayStartPointer(currPos);
             filteredArr.CopyTo(RGBArray, point);
             point += lineSize;
         }
@@ -402,13 +393,11 @@ namespace ImageConverter
 
             if (Width <= 0 || Length <= 0 || FilterMethod != 0 || CompressionType != 0)
                 throw new Exception("Image is incorrect. Converting is not available");
-/*            Console.WriteLine(Width);
-            Console.WriteLine(Length);
-            Console.WriteLine(BitDepth);
-            Console.WriteLine(ColourType);
-            Console.WriteLine(CompressionType);
-            Console.WriteLine($"filter method {FilterMethod}");
-            Console.WriteLine(Interlace);*/
+            if (BitDepth != 8)
+                throw new Exception("Program working only with bit depth 8");
+            if (ColourType == 0 || ColourType == 6)
+                throw new Exception("Program doesn't work with color type 3 and 6");
+
         }
 
        
