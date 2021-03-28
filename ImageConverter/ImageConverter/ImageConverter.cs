@@ -29,6 +29,8 @@ namespace ImageConverter
 
         private void ParseInputLine(string[] args)
         {
+            if(args.Length == 0)
+                throw new Exception("Right format: ImageConverter.exe --source=[file-path] --goal-format=[file-format]");
             if (!IsCorrectAttrs(args))
                 throw new Exception("Incorrect response. Right format: --source=[file-path] --goal-format=[file-format]");
             GetSourcePath(args[0]);
