@@ -52,5 +52,32 @@ namespace RendererApp
         {
             return this.X * other.X + this.Y * other.Y + this.Z * other.Z;
         }
+
+        public static Vector3 Middle(Vector3 A, Vector3 B)
+        {
+            var sum = A + B;
+            var middle = 0.5f * sum;
+            return middle;
+        }
+
+        public bool IsInside(Vector3 A, Vector3 C1)
+        {
+            if (A.X > X || C1.X < X)
+            {
+                return false;
+            }
+
+            if (A.Y > Y || C1.Y < Y)
+            {
+                return false;
+            }
+
+            if (A.Z > Z || C1.Z < Z)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

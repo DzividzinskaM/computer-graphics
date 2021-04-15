@@ -61,12 +61,18 @@ namespace RendererApp
             Screen screen = new Screen(_viewportHeight, _viewportWidth, focalLength, cameraPos);
             var rays = _raysProvider.GetRays(_width, _height, cameraPos, screen);
             var triangles = getTrianglesList(obj);
-
+            var tree = new Octree(triangles);
             byte[] rgb = new byte[_width * _height * 3];
 
             for(int i=0; i<rays.Count; i++)
             {
-                Vector3 pixelColor = RayColor(rays[i], triangles, lightSource);
+                var ray = rays[i];
+                Vector3 pixelColor = new Vector3(1, 1, 1);
+                if (tree.CheckChildNodes(ray))
+                {
+                    pixelColor = RayColor(ray, lightSource);
+                }
+                //Vector3 pixelColor = RayColor(rays[i], triangles, lightSource);
                 WriteColor(ref rgb, pixelColor, i);
             }
 
@@ -99,6 +105,11 @@ namespace RendererApp
             return new Vector3(1, 1, 1);
         }
 
+        private Vector3 RayColor(Ray r, PointLight lightSource)
+        {
+            return ComputeLightening(r, lightSource) * new Vector3(0, 1, 0);   
+        }
+
         private void WriteColor(ref byte[] rgb, Vector3 pixelColor, int point)
         {
             point *= 3;
@@ -107,7 +118,7 @@ namespace RendererApp
             rgb[point+2] = (byte)(pixelColor.Z * 255);
         }
 
-        private bool IntersectionRayTriangle(Ray ray, Triangle inTriangle)
+        public static bool IntersectionRayTriangle(Ray ray, Triangle inTriangle)
         {
             var vertex0 = inTriangle.a;
             var vertex1 = inTriangle.b;
