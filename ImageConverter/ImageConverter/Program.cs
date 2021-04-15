@@ -14,8 +14,7 @@ namespace ImageConverter
             catch(Exception error)
             {
                 Console.WriteLine(error.Message);
-            }
-           
+            }           
         }
     }
 }

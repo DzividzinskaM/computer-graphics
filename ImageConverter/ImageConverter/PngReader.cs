@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ImageConverter
 {
-    class PngReader : IImageReader
+    public class PngReader : IImageReader
     {
         public byte[] inputBytes;
 

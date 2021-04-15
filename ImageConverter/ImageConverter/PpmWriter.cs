@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ImageConverter
 {
-    class PpmWriter : IImageWriter
+    public class PpmWriter : IImageWriter
     {
         private const string PPM_DEFINED_FORMAT = "P6";
         private const string MAX_COLOR = "255";

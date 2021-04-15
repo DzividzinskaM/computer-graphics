@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ImageConverter
 {
-    class Image
+    public class Image
     {
         public int Width { get; }
 

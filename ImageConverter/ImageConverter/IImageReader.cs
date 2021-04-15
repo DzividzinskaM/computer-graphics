@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ImageConverter
 {
-    interface IImageReader
+    public interface IImageReader
     {
         public Image Read(string filePath);
     }
