@@ -15,7 +15,7 @@ namespace RendererApp
         public void Start(string[] args)
         {
             ParseInputLine(args);
-            Renderer renderer = new Renderer(width: 300, angelX:4.7124);
+            Renderer renderer = new Renderer(width: 1024, angelX:4.7124);
             renderer.Render(sourcePath, outputPath);
         }
 
