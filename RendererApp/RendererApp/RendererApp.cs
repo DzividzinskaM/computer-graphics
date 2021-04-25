@@ -22,9 +22,9 @@ namespace RendererApp
         private void ParseInputLine(string[] args)
         {
             if (args.Length == 0)
-                throw new Exception("Right format: Renderer.exe --source=[file-path] --output=[file-format]");
+                throw new Exception("Right format: Renderer.exe --source=[file-path] --output=[output-file-path]");
             if (!IsCorrectAttrs(args))
-                throw new Exception("Incorrect response. Right format: --source=[file-path] --output=[file-format]");
+                throw new Exception("Incorrect response. Right format: --source=[file-path] --output=[output-file-path]");
             GetSourcePath(args[0]);
             GetGoalPath(args[1]);
         }
