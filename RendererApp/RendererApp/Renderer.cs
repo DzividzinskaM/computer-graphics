@@ -30,6 +30,12 @@ namespace RendererApp
         public float ScaleXValue { get; set; }
         public float ScaleYValue { get; set; }
         public float ScaleZValue { get; set; }
+        private float[,] transformedMatrix = new float[4, 4] {
+                {1, 0, 0, 0},
+                {0, 1, 0, 0},
+                {0, 0, 1, 0},
+                {0, 0, 0, 1}
+        };
 
         public Renderer(int width = 100, float offsetX = 0, float offsetY = 0, float offsetZ = 0,
             double angelX = 0, double angelY = 0, double angelZ = 0, float scaleX = 1, float scaleY = 1,
@@ -50,12 +56,13 @@ namespace RendererApp
             ScaleXValue = scaleX;
             ScaleYValue = scaleY;
             ScaleZValue = scaleZ;
+            getTransformMatrix();
         }
 
         public void Render(string sourcePath, string outputPath)
         {
 
-            PointLight lightSource = new PointLight { Intencity = 0.7f, Position = new Vector3(5,2,-2) };
+            PointLight lightSource = new PointLight { Intencity = 0.7f, Position = new Vector3(0,0,-1f) };
             var obj = _objLoader.LoadObj(sourcePath);
             var cameraPos = _camera.GetCameraPosition();
             Screen screen = new Screen(_viewportHeight, _viewportWidth, focalLength, cameraPos);
@@ -67,13 +74,18 @@ namespace RendererApp
             for(int i=0; i<rays.Count; i++)
             {
                 var ray = rays[i];
-                Vector3 pixelColor = new Vector3(1, 1, 1);
-                if (tree.CheckChildNodes(ray))
+                Vector3 pixelColor = new Vector3(0, 1, 0);
+                if (tree.CheckChildNodes(ray, out var closestTriangle))
                 {
-                    pixelColor = RayColor(ray, lightSource);
+                    Vector3 norm = (closestTriangle.b - closestTriangle.a).CrossProduct(closestTriangle.c - closestTriangle.a);
+                    Ray ray1 = new Ray(ray.Orig, norm);
+                    var color = ComputeLightening(ray1, lightSource) * pixelColor;
+                    WriteColor(ref rgb, color, i);
                 }
-                //Vector3 pixelColor = RayColor(rays[i], triangles, lightSource);
-                WriteColor(ref rgb, pixelColor, i);
+                else
+                {
+                    WriteColor(ref rgb, new Vector3(0, 0, 0), i);
+                }
             }
 
             Image image = new Image(_width, _height, rgb);
@@ -166,188 +178,178 @@ namespace RendererApp
 
                 Triangle triangel = new Triangle(vertex1, vertex2, vertex3);
 
-                TriangleLst.Add(RotateX(triangel, AngelX));
-                
+                TriangleLst.Add(Transform(triangel));
+
             }
 
             return TriangleLst;
         }
 
-        private Triangle TranslateX(Triangle trig, float offset)
+        private Triangle Transform(Triangle triangel)
         {
-            float[,] transformMatrix = new float[4, 4] {
-                {0, 0, 0, offset},
+            Vector3 a = MultipleMatrixVector(transformedMatrix, triangel.a);
+            Vector3 b = MultipleMatrixVector(transformedMatrix, triangel.b);
+            Vector3 c = MultipleMatrixVector(transformedMatrix, triangel.c);
+
+            return new Triangle(a, b, c);
+        }
+
+        private Vector3 MultipleMatrixVector(float[,] transformedMatrix, Vector3 v)
+        {
+            float[,] matrixB = new float[4, 1] { { v.X }, { v.Y }, { v.Z }, { 1 } };
+            var resMatrix = Multiple(transformedMatrix, matrixB);
+            return new Vector3(resMatrix[0, 0], resMatrix[1, 0], resMatrix[2, 0]);
+        }
+
+        private void getTransformMatrix()
+        {
+            TranslateX();
+            TranslateY();
+            TranslateZ();
+            RotateX();
+            RotateY();
+            RotateZ();
+            ScaleX();
+            ScaleY();
+            ScaleZ();
+
+        }
+
+        private void TranslateX()
+        {
+            float[,] matrix = new float[4, 4] {
+                {1, 0, 0, OffsetX},
                 {0, 1, 0, 0},
                 {0, 0, 1, 0},
                 {0, 0, 0, 1}
             };
 
-            Vector3 a = MultipleArrs(transformMatrix, trig.a);
-            Vector3 b = MultipleArrs(transformMatrix, trig.b);
-            Vector3 c = MultipleArrs(transformMatrix, trig.c);
-
-            return new Triangle(a, b, c);
+            transformedMatrix = Multiple(transformedMatrix, matrix);
         }
 
-        private Triangle TranslateY(Triangle trig, float offset)
+        private void TranslateY()
         {
-            float[,] transformMatrix = new float[4, 4] {
-                {0, 0, 0, 0},
-                {0, 1, 0, offset},
+            float[,] matrix = new float[4, 4] {
+                {1, 0, 0, 0},
+                {0, 1, 0, OffsetY},
                 {0, 0, 1, 0},
                 {0, 0, 0, 1}
             };
 
-            Vector3 a = MultipleArrs(transformMatrix, trig.a);
-            Vector3 b = MultipleArrs(transformMatrix, trig.b);
-            Vector3 c = MultipleArrs(transformMatrix, trig.c);
-
-            return new Triangle(a, b, c);
+            transformedMatrix = Multiple(transformedMatrix, matrix);
         }
 
-        private static Triangle TranslateZ(Triangle trig, float offset)
+        private void TranslateZ()
         {
-            float[,] transformMatrix = new float[4, 4] {
+            float[,] matrix = new float[4, 4] {
                 {1, 0, 0, 0},
                 {0, 1, 0, 0},
-                {0, 0, 1, offset},
+                {0, 0, 1, OffsetZ},
                 {0, 0, 0, 1}
             };
 
-            Vector3 a = MultipleArrs(transformMatrix, trig.a);
-            Vector3 b = MultipleArrs(transformMatrix, trig.b);
-            Vector3 c = MultipleArrs(transformMatrix, trig.c);
-
-            return new Triangle(a, b, c);
+            transformedMatrix = Multiple(transformedMatrix, matrix);
         }
 
-        private Triangle RotateX(Triangle trig, double angel)
+        private void RotateX()
         {
-            float cosAngel = (float)Math.Cos(angel);
-            float sinAngel = (float)Math.Sin(angel);
-            float[,] transformMatrix = new float[4, 4] {
+            float cosAngel = (float)Math.Cos(AngelX);
+            float sinAngel = (float)Math.Sin(AngelX);
+            float[,] matrix = new float[4, 4] {
                 {1, 0, 0, 0},
                 {0, cosAngel, -sinAngel, 0},
                 {0, sinAngel, cosAngel, 0},
                 {0, 0, 0, 1}
             };
 
-            Vector3 a = MultipleArrs(transformMatrix, trig.a);
-            Vector3 b = MultipleArrs(transformMatrix, trig.b);
-            Vector3 c = MultipleArrs(transformMatrix, trig.c);
-
-            return new Triangle(a, b, c);
+            transformedMatrix = Multiple(transformedMatrix, matrix);
         }
 
-        private Triangle RotateY(Triangle trig, double angel)
+        private void RotateY()
         {
-            float cosAngel = (float)Math.Cos(angel);
-            float sinAngel = (float)Math.Sin(angel);
-            float[,] transformMatrix = new float[4, 4] {
+            float cosAngel = (float)Math.Cos(AngelY);
+            float sinAngel = (float)Math.Sin(AngelY);
+            float[,] matrix = new float[4, 4] {
                 {cosAngel, 0, sinAngel, 0},
                 {0, 1, 0, 0},
                 {-sinAngel, 0, cosAngel, 0},
                 {0, 0, 0, 1}
             };
 
-            Vector3 a = MultipleArrs(transformMatrix, trig.a);
-            Vector3 b = MultipleArrs(transformMatrix, trig.b);
-            Vector3 c = MultipleArrs(transformMatrix, trig.c);
-
-            return new Triangle(a, b, c);
+            transformedMatrix = Multiple(transformedMatrix, matrix);
         }
 
-        private Triangle RotateZ(Triangle trig, double angel)
+        private void RotateZ()
         {
-            float cosAngel = (float)Math.Cos(angel);
-            float sinAngel = (float)Math.Sin(angel);
-            float[,] transformMatrix = new float[4, 4] {
+            float cosAngel = (float)Math.Cos(AngelZ);
+            float sinAngel = (float)Math.Sin(AngelZ);
+            float[,] matrix = new float[4, 4] {
                 {cosAngel, -sinAngel, 0, 0},
                 {sinAngel, cosAngel, 0, 0},
                 {0, 0, 1, 0},
                 {0, 0, 0, 1}
             };
 
-            Vector3 a = MultipleArrs(transformMatrix, trig.a);
-            Vector3 b = MultipleArrs(transformMatrix, trig.b);
-            Vector3 c = MultipleArrs(transformMatrix, trig.c);
-
-            return new Triangle(a, b, c);
+            transformedMatrix = Multiple(transformedMatrix, matrix);
         }
 
-        private Triangle ScaleX(Triangle trig, float scale)
+        private void ScaleX()
         {
-            float[,] transformMatrix = new float[4, 4] {
-                {scale, 0, 0, 0},
+            float[,] matrix = new float[4, 4] {
+                {ScaleXValue, 0, 0, 0},
                 {0, 1, 0, 0},
-                {0, 0, 1, 0},
-                {0, 0, 0, 1}
+                { 0, 0, 1, 0},
+                { 0, 0, 0, 1}
             };
 
-            Vector3 a = MultipleArrs(transformMatrix, trig.a);
-            Vector3 b = MultipleArrs(transformMatrix, trig.b);
-            Vector3 c = MultipleArrs(transformMatrix, trig.c);
-
-            return new Triangle(a, b, c);
-
+            transformedMatrix = Multiple(transformedMatrix, matrix);
         }
 
-        private Triangle ScaleY(Triangle trig, float scale)
+        private void ScaleY()
         {
-            float[,] transformMatrix = new float[4, 4] {
-                  {1, 0, 0, 0},
-                  {0, scale, 0, 0},
-                  {0, 0, 1, 0},
-                  {0, 0, 0, 1}
-              };
+            float[,] matrix = new float[4, 4] {
+                {1, 0, 0, 0},
+                {0, ScaleYValue, 0, 0},
+                { 0, 0, 1, 0},
+                { 0, 0, 0, 1}
+            };
 
-            Vector3 a = MultipleArrs(transformMatrix, trig.a);
-            Vector3 b = MultipleArrs(transformMatrix, trig.b);
-            Vector3 c = MultipleArrs(transformMatrix, trig.c);
-
-            return new Triangle(a, b, c);
+            transformedMatrix = Multiple(transformedMatrix, matrix);
         }
 
-        private static Triangle ScaleZ(Triangle trig, float scale)
+        private void ScaleZ()
         {
-            float[,] transformMatrix = new float[4, 4] {
-                  {1, 0, 0, 0},
-                  {0, 1, 0, 0},
-                  {0, 0, scale, 0},
-                  {0, 0, 0, 1}
-              };
+            float[,] matrix = new float[4, 4] {
+                {1, 0, 0, 0},
+                {0, 1, 0, 0},
+                { 0, 0, ScaleZValue, 0},
+                { 0, 0, 0, 1}
+            };
 
-            Vector3 a = MultipleArrs(transformMatrix, trig.a);
-            Vector3 b = MultipleArrs(transformMatrix, trig.b);
-            Vector3 c = MultipleArrs(transformMatrix, trig.c);
-
-            return new Triangle(a, b, c);
+            transformedMatrix = Multiple(transformedMatrix, matrix);
         }
 
-        static Vector3 MultipleArrs(float[,] matrixA, Vector3 vector)
+        private float[,] Multiple(float[,] matrixA, float[,] matrixB)
         {
-           
-            float[,] matrixB = new float[4, 1] { { vector.X }, { vector.Y }, { vector.Z }, { 1 } };
+            int rowsCount = matrixA.GetUpperBound(0) + 1;
+            int colsCount = matrixB.GetUpperBound(1) + 1;
 
-            int matrixARows = 4;
-            int matrixACols = 4;
-            int matrixBCols = 1;
-            float[,] matrixC = new float[matrixARows, matrixBCols];
+            var matrixC = new float[rowsCount, colsCount];
 
-            for (var i = 0; i < matrixARows; i++)
+            for (var i = 0; i < rowsCount; i++)
             {
-                for (var j = 0; j < matrixBCols; j++)
+                for (var j = 0; j < colsCount; j++)
                 {
                     matrixC[i, j] = 0;
 
-                    for (var k = 0; k < matrixACols; k++)
+                    for (var k = 0; k < matrixA.GetUpperBound(1) + 1; k++)
                     {
                         matrixC[i, j] += matrixA[i, k] * matrixB[k, j];
                     }
                 }
             }
-            Vector3 resVector = new Vector3(matrixC[0, 0], matrixC[1, 0], matrixC[2, 0]);
-            return resVector;
+
+            return matrixC;
         }
 
     }

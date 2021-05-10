@@ -36,7 +36,7 @@ namespace RendererApp
 
         bool IsTriangleInside(Triangle Triangle);
 
-        bool CheckNode(Ray ray);
+        bool CheckNode(Ray ray, out Triangle closestTriangle);
     }
 
     public class Node : INode
@@ -213,22 +213,38 @@ namespace RendererApp
             return point.IsInside(A, C1);
         }
 
-        protected bool DoesIntersectAnyInnerTriangles(Ray ray)
+        protected Triangle DoesIntersectAnyInnerTriangles(Ray ray)
         {
             if (InnerTriangles == null || !InnerTriangles.Any())
             {
-                return false;
+                return null;
             }
 
-            foreach (var Triangle in InnerTriangles)
+            float currZ = 0;
+            Triangle res = null;
+
+            foreach (var triangle in InnerTriangles)
             {
-                if (Renderer.IntersectionRayTriangle(ray, Triangle))
+                if (Renderer.IntersectionRayTriangle(ray, triangle))
                 {
-                    return true;
+                    if (res == null)
+                    {
+                        res = triangle;
+                        currZ = (triangle.a.Z + triangle.b.Z + triangle.c.Z) / 3;
+                    }
+                    else
+                    {
+                        float z = (triangle.a.Z + triangle.b.Z + triangle.c.Z) / 3;
+                        if (z < currZ)
+                        {
+                            res = triangle;
+                            currZ = z;
+                        }
+                    }
                 }
             }
 
-            return false;
+            return res;
         }
 
         protected bool DoesIntersectNode(Ray ray)
@@ -244,32 +260,46 @@ namespace RendererApp
             return false;
         }
 
-        public bool CheckNode(Ray ray)
+        public bool CheckNode(Ray ray, out Triangle closestTriangle)
         {
+            closestTriangle = null;
             if (!DoesIntersectNode(ray))
             {
                 return false;
             }
 
-            if (DoesIntersectAnyInnerTriangles(ray))
-            {
-                return true;
-            }
+            closestTriangle = DoesIntersectAnyInnerTriangles(ray);
 
             if (ChildNodes == null || !ChildNodes.Any())
             {
-                return false;
+                return closestTriangle != null;
             }
+
+            float currZ = closestTriangle == null ? 0 : (closestTriangle.a.Z + closestTriangle.b.Z + closestTriangle.c.Z) / 3;
 
             foreach (var child in ChildNodes)
             {
-                if (child.CheckNode(ray))
+                if (child.CheckNode(ray, out var childClosestTriangle))
                 {
-                    return true;
+                    if (closestTriangle == null)
+                    {
+                        closestTriangle = childClosestTriangle;
+                        currZ = (childClosestTriangle.a.Z + childClosestTriangle.b.Z + childClosestTriangle.c.Z) / 3;
+                    }
+                    else
+                    {
+                        float z = (childClosestTriangle.a.Z + childClosestTriangle.b.Z + childClosestTriangle.c.Z) / 3;
+                        if (z < currZ)
+                        {
+                            closestTriangle = childClosestTriangle;
+                            currZ = z;
+                        }
+                    }
+
                 }
             }
 
-            return false;
+            return closestTriangle != null;
         }
     }
 }

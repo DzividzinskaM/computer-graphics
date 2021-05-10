@@ -31,9 +31,9 @@ namespace RendererApp
             Top.SplitNode();
         }
 
-        public bool CheckChildNodes(Ray ray)
+        public bool CheckChildNodes(Ray ray, out Triangle closestTriangle)
         {
-            return Top.CheckNode(ray);
+            return Top.CheckNode(ray, out closestTriangle);
         }
 
         protected void SetTreeTriangles()
