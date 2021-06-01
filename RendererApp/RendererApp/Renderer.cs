@@ -16,6 +16,9 @@ namespace RendererApp
         private IObjLoader _objLoader { get; set; }
         private IRaysProvider _raysProvider { get; set; }
         private int _width { get; set; }
+
+       
+
         private int _height { get; set; }
         private const float _aspectRatio = 16.0f / 9.0f;
         private const float focalLength = 1.0f;
@@ -36,6 +39,7 @@ namespace RendererApp
                 {0, 0, 1, 0},
                 {0, 0, 0, 1}
         };
+        private ProgramScene scene;
 
         public Renderer(int width = 100, float offsetX = 0, float offsetY = 0, float offsetZ = 0,
             double angelX = 0, double angelY = 0, double angelZ = 0, float scaleX = 1, float scaleY = 1,
@@ -57,6 +61,61 @@ namespace RendererApp
             ScaleYValue = scaleY;
             ScaleZValue = scaleZ;
             getTransformMatrix();
+        }
+
+        public Renderer(ProgramScene scene)
+        {
+            this.scene = scene;
+            _objLoader = Container.GetService<IObjLoader>();
+            _camera = Container.GetService<ICameraPositionProvider>();
+            _objLoader = Container.GetService<IObjLoader>();
+            _raysProvider = Container.GetService<IRaysProvider>();
+            _width = 560;
+            _height = (int)(_width / _aspectRatio);
+            _viewportWidth = _aspectRatio * _viewportHeight;
+        }
+
+        internal void Render(ProgramScene scene, string outputPath)
+        {
+            List<ILightSource> lightList = new List<ILightSource>();
+            PointLight pointLightSource = new PointLight { Intencity = 0.5f, Position = new Vector3(0, 0, -1) };
+            AmbientLight ambientLightSource = new AmbientLight { Intencity = 0.1f };
+            DirectionalLight directonalLightSource = new DirectionalLight { Intencity = 0.4f, Direction = new Vector3(1, 0.7f, 3) };
+            lightList.Add(pointLightSource);
+            lightList.Add(ambientLightSource);
+            lightList.Add(directonalLightSource);
+
+            string path = ((MeshObject)scene.objects[0]).filePath;
+            var obj = _objLoader.LoadObj(path);
+            var cameraPos = _camera.GetCameraPosition();
+            Screen screen = new Screen(_viewportHeight, _viewportWidth, focalLength, cameraPos);
+            var rays = _raysProvider.GetRays(_width, _height, cameraPos, screen);
+            var triangles = getTrianglesList(obj);
+            var tree = new Octree(triangles);
+            byte[] rgb = new byte[_width * _height * 3];
+
+            for (int i = 0; i < rays.Count; i++)
+            {
+                var ray = rays[i];
+                Vector3 pixelColor = new Vector3(0, 1, 0);
+                if (tree.CheckChildNodes(ray, out var closestTriangle))
+                {
+                    Vector3 norm = (closestTriangle.b - closestTriangle.a).CrossProduct(closestTriangle.c - closestTriangle.a);
+                    Ray ray1 = new Ray(ray.Orig, norm);
+                    var color = (float)ComputeLightening(ray1, lightList) * pixelColor;
+                    WriteColor(ref rgb, color, i);
+                }
+                else
+                {
+                    WriteColor(ref rgb, new Vector3(1, 1, 1), i);
+                }
+            }
+
+            Image image = new Image(_width, _height, rgb);
+            PpmWriter writer = new PpmWriter();
+            writer.Write(outputPath, image);
+
+
         }
 
         public void Render(string sourcePath, string outputPath)
