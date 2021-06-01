@@ -14,7 +14,7 @@
       <HintPath>..\..\..\..\computer-gr\ObjLoader-master\ObjLoader-master\source\CjClutter.ObjLoader.Loader\bin\Debug\netstandard1.4\CjClutter.ObjLoader.Loader.dll</HintPath>
     </Reference>
     <Reference Include="ImageConverter">
-      <HintPath>..\..\ImageConverter\ImageConverter\bin\Release\netcoreapp3.1\ImageConverter.dll</HintPath>
+      <HintPath>..\..\..\..\computerGrNew\computer-graphics\ImageConverter\ImageConverter\bin\Release\netcoreapp3.1\ImageConverter.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -61,8 +61,16 @@ namespace RendererApp
 
         public void Render(string sourcePath, string outputPath)
         {
+            //light
+            List<ILightSource> lightList = new List<ILightSource>();
+            PointLight pointLightSource = new PointLight { Intencity = 0.5f, Position = new Vector3(0, 0, -1) };
+            AmbientLight ambientLightSource = new AmbientLight { Intencity = 0.1f };
+            DirectionalLight directonalLightSource = new DirectionalLight { Intencity = 0.4f, Direction = new Vector3(1, 0.7f, 3) };
+            lightList.Add(pointLightSource);
+            //lightList.Add(ambientLightSource);
+            //lightList.Add(directonalLightSource);
 
-            PointLight lightSource = new PointLight { Intencity = 0.7f, Position = new Vector3(0,0,-1f) };
+
             var obj = _objLoader.LoadObj(sourcePath);
             var cameraPos = _camera.GetCameraPosition();
             Screen screen = new Screen(_viewportHeight, _viewportWidth, focalLength, cameraPos);
@@ -79,12 +87,12 @@ namespace RendererApp
                 {
                     Vector3 norm = (closestTriangle.b - closestTriangle.a).CrossProduct(closestTriangle.c - closestTriangle.a);
                     Ray ray1 = new Ray(ray.Orig, norm);
-                    var color = ComputeLightening(ray1, lightSource) * pixelColor;
+                    var color = (float)ComputeLightening(ray1, lightList) * pixelColor;
                     WriteColor(ref rgb, color, i);
                 }
                 else
                 {
-                    WriteColor(ref rgb, new Vector3(0, 0, 0), i);
+                    WriteColor(ref rgb, new Vector3(1, 1, 1), i);
                 }
             }
 
@@ -94,17 +102,42 @@ namespace RendererApp
 
         }
 
-        private float ComputeLightening(Ray ray, PointLight light)
+        private double ComputeLightening(Ray ray, List<ILightSource> lightList)
         {
-            float i = 0;
-            Vector3 L = light.Position - ray.Orig;
-            float n_dot_l = ray.Dir.DotProduct(L);
-            if (n_dot_l > 0)
-                i += (light.Intencity * n_dot_l) / (ray.Dir.Length * L.Length);
+            double i = 0;
+            double max = double.PositiveInfinity;
+            foreach (var light in lightList)
+            {
+                if (light is AmbientLight)
+                {
+                    i += light.Intencity;
+                }
+                else
+                {
+                    Vector3 L;
+                    if (light is PointLight)
+                    {
+                        L = ((PointLight)light).Position - ray.Orig;
+                        max = 1;
+                    }
+                    else
+                    {
+                        L = ((DirectionalLight)light).Direction;
+                        max = double.PositiveInfinity;
+                    }
+
+                    float n_dot_l = ray.Dir.DotProduct(L);
+                    if (n_dot_l > 0)
+                        i += (light.Intencity * n_dot_l) / (ray.Dir.Length * L.Length);
+                }
+
+
+            }
             return i;
         }
 
-        private Vector3 RayColor(Ray r, List<Triangle> TrigsLst, PointLight lightSource)
+
+       /* private Vector3 RayColor(Ray r, List<Triangle> TrigsLst, PointLight lightSource)
         {
             for (int i = 0; i < TrigsLst.Count; i++)
             {
@@ -115,12 +148,12 @@ namespace RendererApp
             }
 
             return new Vector3(1, 1, 1);
-        }
+        }*/
 
-        private Vector3 RayColor(Ray r, PointLight lightSource)
+/*        private Vector3 RayColor(Ray r, PointLight lightSource)
         {
             return ComputeLightening(r, lightSource) * new Vector3(0, 1, 0);   
-        }
+        }*/
 
         private void WriteColor(ref byte[] rgb, Vector3 pixelColor, int point)
         {
