@@ -6,11 +6,14 @@ namespace RendererApp
     {
         public int width { get; set; }
         public List<IProgramSceneObject> objects;
+        public List<StaticCameraPositionProvider> cameras;
+        public StaticCameraPositionProvider mainCamera { get; set; } 
+
 
         public ProgramScene()
-        {
-
+        { 
             objects = new List<IProgramSceneObject>();
+            cameras = new List<StaticCameraPositionProvider>();
         }
 
     }

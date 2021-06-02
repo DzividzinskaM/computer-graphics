@@ -39,7 +39,7 @@ namespace RendererApp
             _camera = Container.GetService<ICameraPositionProvider>();
             _objLoader = Container.GetService<IObjLoader>();
             _raysProvider = Container.GetService<IRaysProvider>();
-            _width = 560;
+            _width = scene.width;
             _height = (int)(_width / _aspectRatio);
             _viewportWidth = _aspectRatio * _viewportHeight;
 
@@ -56,7 +56,7 @@ namespace RendererApp
             lightList.Add(ambientLightSource);
             lightList.Add(directonalLightSource);
 
-            var cameraPos = _camera.GetCameraPosition();
+            var cameraPos = scene.mainCamera.GetCameraPosition();
             Screen screen = new Screen(_viewportHeight, _viewportWidth, focalLength, cameraPos);
             var rays = _raysProvider.GetRays(_width, _height, cameraPos, screen);
             byte[] rgb = new byte[_width * _height * 3];
@@ -110,19 +110,18 @@ namespace RendererApp
                         Ray ray1 = new Ray(ray.Orig, norm);
 
 
-                        /* var vNormal = obj.Normals[closestTriangle.a.normalIndex];
-                         var n0 = new Vector3(vNormal.X, vNormal.Y, vNormal.Z);
-                         var vNormal1 = obj.Normals[closestTriangle.b.normalIndex];
-                         var n1 = new Vector3(vNormal1.X, vNormal1.Y, vNormal1.Z);
-                         var vNormal2 = obj.Normals[closestTriangle.c.normalIndex];
-                         var n2 = new Vector3(vNormal2.X, vNormal2.Y, vNormal2.Z);
+                       /* var vNormal = obj.Normals[closestTriangle.a.normalIndex];
+                        var n0 = new Vector3(vNormal.X, vNormal.Y, vNormal.Z);
+                        var vNormal1 = obj.Normals[closestTriangle.b.normalIndex];
+                        var n1 = new Vector3(vNormal1.X, vNormal1.Y, vNormal1.Z);
+                        var vNormal2 = obj.Normals[closestTriangle.c.normalIndex];
+                        var n2 = new Vector3(vNormal2.X, vNormal2.Y, vNormal2.Z);
 
-                         IntersectionRayTriangle(ray, closestTriangle, out float u, out float v);
+                        IntersectionRayTriangle(ray, closestTriangle, out float u, out float v);
 
-                         var hitNormal = u * n0 + v * n1 + (1 - u - v) * n2;*/
+                        var hitNormal = u * n0 + v * n1 + (1 - u - v) * n2;
 
-                       // Ray ray1 = new Ray(ray.Orig, hitNormal);
-
+                        Ray ray1 = new Ray(ray.Orig, hitNormal);*/
 
 
                         var color = (float)ComputeLightening(ray1, lightList) * startColor;
@@ -214,28 +213,6 @@ namespace RendererApp
         {
             return 2 * N.DotProduct(ray.Dir) * N - ray.Dir;
         }
-
-
-        /* var start = new Vector3(1, 0, 0);
-
-                //Vector3 norm = (triangle.b - triangle.a).CrossProduct(triangle.c - triangle.a);
-
-                //Ray ray1 = new Ray(ray.Orig, norm);
-
-                var vNormal = normals[triangle.a.normalIndex];
-                var n0 = new Vector3(vNormal.X, vNormal.Y, vNormal.Z);
-                var vNormal1 = normals[triangle.b.normalIndex];
-                var n1 = new Vector3(vNormal1.X, vNormal1.Y, vNormal1.Z);
-                var vNormal2 = normals[triangle.c.normalIndex];
-                var n2 = new Vector3(vNormal2.X, vNormal2.Y, vNormal2.Z);
-
-                var hitNormal = u * n0 + v * n1 + (1 - u - v) * n2;
-
-                Ray ray1 = new Ray(ray.Orig, hitNormal);
-
-                var color = (float)ComputeLightening(ray1, lightList, -1, sphereLst) * start;
-
-                return color;*/
 
 
         private SphereObject findHittedSphere(List<SphereObject> sphereLst, Ray ray, out double closest,

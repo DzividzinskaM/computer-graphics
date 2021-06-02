@@ -1,6 +1,8 @@
-﻿using SceneFormat;
+﻿using Google.Protobuf.Collections;
+using SceneFormat;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RendererApp
 {
@@ -15,13 +17,30 @@ namespace RendererApp
             scene = new ProgramScene();
             var readResultJson = _sceneIO.Read(path);
 
+            scene.cameras = getSceneCameras(readResultJson.Cameras);
             scene.objects = getSceneObjects(readResultJson.SceneObjects);
+           
             if(readResultJson.RenderOptions != null)
             {
                 scene.width = readResultJson.RenderOptions.Width;
+                scene.mainCamera = scene.cameras.Where(c => c.id == (int)readResultJson.RenderOptions.CameraId).FirstOrDefault();
             }
 
             return scene;
+        }
+
+        private List<StaticCameraPositionProvider> getSceneCameras(RepeatedField<Camera> cameras)
+        {
+            List<StaticCameraPositionProvider> objects = new List<StaticCameraPositionProvider>();
+            foreach (var camera in cameras)
+            {
+                StaticCameraPositionProvider newCamera = new StaticCameraPositionProvider();
+                var pos = new Vector3((float)camera.Transform.Position.X, (float)camera.Transform.Position.Y, (float)camera.Transform.Position.Z);
+                newCamera.SetCameraPosition(pos, camera.Id);
+
+                objects.Add(newCamera);
+            }
+            return objects;
         }
 
         private List<IProgramSceneObject> getSceneObjects(Google.Protobuf.Collections.RepeatedField<SceneObject> sceneObjects)

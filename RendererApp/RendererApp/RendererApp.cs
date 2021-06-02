@@ -14,9 +14,11 @@ namespace RendererApp
 
         public void Start(string[] args)
         {
+            SceneFileLoader loader = new SceneFileLoader();
             ParseInputLine(args);
-            Renderer renderer = new Renderer(width: 1024, angelX:4.7124);
-            renderer.Render(sourcePath, outputPath);
+            ProgramScene scene = loader.load(sourcePath);
+            Renderer renderer = new Renderer(scene);
+            renderer.ren(scene, outputPath);
         }
 
         private void ParseInputLine(string[] args)
@@ -27,6 +29,7 @@ namespace RendererApp
                 throw new Exception("Incorrect response. Right format: --source=[file-path] --output=[output-file-path]");
             GetSourcePath(args[0]);
             GetGoalPath(args[1]);
+
         }
 
         private void GetGoalPath(string output)

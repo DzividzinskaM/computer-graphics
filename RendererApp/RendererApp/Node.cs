@@ -225,7 +225,7 @@ namespace RendererApp
 
             foreach (var triangle in InnerTriangles)
             {
-                if (Renderer.IntersectionRayTriangle(ray, triangle))
+                if (Renderer.IntersectionRayTriangle(ray, triangle, out float u, out float v))
                 {
                     if (res == null)
                     {
@@ -251,7 +251,7 @@ namespace RendererApp
         {
             for (int i = 0; i < 12; i++)
             {
-                if (Renderer.IntersectionRayTriangle(ray, BasicPolygons[i]))
+                if (Renderer.IntersectionRayTriangle(ray, BasicPolygons[i], out float u, out float v))
                 {
                     return true;
                 }
