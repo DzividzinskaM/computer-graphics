@@ -15,8 +15,3 @@ Request format:
 ![example4](results/withInterpolation.png)
 
 ![example5](results/cow.png)
-
-
-
-
-
