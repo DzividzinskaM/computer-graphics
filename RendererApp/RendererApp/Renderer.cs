@@ -139,7 +139,7 @@ namespace RendererApp
         {
             for (int i = 0; i < rays.Count; i++)
             {
-                var color = DrawSphere(rays[i], i, lightList, spheresLst, 3);
+                var color = DrawSphere(rays[i], i, lightList, spheresLst, 100);
                 WriteColor(ref rgb, color, i);
             }
 
