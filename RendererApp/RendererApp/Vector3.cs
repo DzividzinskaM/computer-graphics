@@ -9,12 +9,21 @@ namespace RendererApp
         public float X;
         public float Y;
         public float Z;
+        public int normalIndex;
 
         public Vector3(float x, float y, float z)
         {
             X = x;
             Y = y;
             Z = z;
+        }
+
+        public Vector3(float x, float y, float z, int normalIndex)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            this.normalIndex = normalIndex;
         }
 
         public float Length => (float)Math.Sqrt(X * X + Y * Y + Z * Z);

@@ -16,6 +16,10 @@ namespace RendererApp
             var readResultJson = _sceneIO.Read(path);
 
             scene.objects = getSceneObjects(readResultJson.SceneObjects);
+            if(readResultJson.RenderOptions != null)
+            {
+                scene.width = readResultJson.RenderOptions.Width;
+            }
 
             return scene;
         }
@@ -25,33 +29,47 @@ namespace RendererApp
             List<IProgramSceneObject> objects = new List<IProgramSceneObject>();
             foreach (var obj in sceneObjects)
             {
-                var newSceneObj = new MeshObject();
-                if (obj.Transform != null)
+                Transform transform = new Transform();
+                if (obj.Transform.ToString().Length !=0)
                 {
-                    newSceneObj.transform = new Transform();
-                    newSceneObj.transform.Position = new Vector3((float)obj.Transform.Position.X, (float)obj.Transform.Position.Y, (float)obj.Transform.Position.Z);
-                    newSceneObj.transform.Rotation = new Vector3((float)obj.Transform.Rotation.X, (float)obj.Transform.Rotation.Y, (float)obj.Transform.Rotation.Z);
-                    newSceneObj.transform.Scale = new Vector3((float)obj.Transform.Scale.X, (float)obj.Transform.Scale.Y, (float)obj.Transform.Scale.Z);
+                    transform.Position = new Vector3((float)obj.Transform.Position.X, (float)obj.Transform.Position.Y, (float)obj.Transform.Position.Z);
+                    transform.Rotation = new Vector3((float)obj.Transform.Rotation.X, (float)obj.Transform.Rotation.Y, (float)obj.Transform.Rotation.Z);
+                    transform.Scale = new Vector3((float)obj.Transform.Scale.X, (float)obj.Transform.Scale.Y, (float)obj.Transform.Scale.Z);
                 }
 
-                if (obj.Material != null && obj.Material is LambertMaterial)
+
+                IMaterial material = null;
+                if (obj.Material.LambertReflection != null)
                 {
                     Vector3 color = new Vector3((float)obj.Material.LambertReflection.Color.R,
                         (float)obj.Material.LambertReflection.Color.G,
                         (float)obj.Material.LambertReflection.Color.B);
-                    newSceneObj.material = new LambertMaterial(color);
+                    material = new LambertMaterial(color);
                 }
-                else if (obj.Material != null && obj.Material is SpecularReflectionMaterial)
+                else if (obj.Material.SpecularReflection.ToString().Length != 0)
                 {
-                    //adding info;
-                    double eta = (float)obj.Material.SpecularReflection.Eta;
+                    material = new SpecReflMaterial((float)obj.Material.SpecularReflection.Eta);
                 }
 
+                if (obj.MeshedObject != null)
+                {
+                    MeshObject newSceneObj = new MeshObject();
+                    newSceneObj.material = material;
+                    newSceneObj.transform = transform;
 
-                newSceneObj.filePath = obj.MeshedObject.Reference;
+                    newSceneObj.filePath = obj.MeshedObject.Reference;
+                    objects.Add(newSceneObj);
+                }
+                else if (obj.Sphere.ToString().Length != 0)
+                {
+                    SphereObject newSceneObj = new SphereObject();
+                    newSceneObj.material = material;
+                    newSceneObj.transform = transform;
 
+                    newSceneObj.radius = (float)obj.Sphere.Radius;
+                    objects.Add(newSceneObj);
+                }
 
-                objects.Add(newSceneObj);
             }
             return objects;
         }
