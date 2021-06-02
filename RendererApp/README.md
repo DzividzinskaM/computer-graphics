@@ -7,3 +7,16 @@ Request format:
 
 ## Result examples
 ![example1](results/updatedCow.png)
+
+![example2](results/sphereCamPos1.png)
+
+![example3](results/sphereCamPos2.png)
+
+![example4](results/withInterpolation.png)
+
+![example5](results/cow.png)
+
+
+
+
+

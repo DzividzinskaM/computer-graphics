@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "renderOptions": {
+    "cameraId":2,
+    "width": 1024,
+    "height": 320
+  },
+  "sceneObjects": [
+    {
+      "id": 1,
+      "transform": {
+        "position": {},
+        "rotation": {
+          "x": 4.7124
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "material": {
+        "lambertReflection": {
+          "color": {
+            "r": 1
+          }
+        }
+      },
+      "meshedObject": {
+        "reference": "D:/testValue/cow.obj"
+      }
+    }
+  ],
+  "cameras": [
+    {
+      "id": 2,
+      "transform": {
+        "position": {
+          "z": 1
+        },
+        "rotation": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    },
+    {
+      "id": 3,
+      "transform": {
+        "position": {
+          "x": -0.5,
+          "z": 1
+        },
+        "rotation": {},
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  ]
+}
